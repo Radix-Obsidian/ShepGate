@@ -55,6 +55,7 @@ model Tool {
   server      Server   @relation(fields: [serverId], references: [id], onDelete: Cascade)
   name        String   // Tool identifier
   description String?
+  inputSchema Json?    // JSON schema for tool inputs
   riskLevel   String   @default("blocked") // "safe" | "needs_approval" | "blocked"
   createdAt   DateTime @default(now())
   updatedAt   DateTime @updatedAt

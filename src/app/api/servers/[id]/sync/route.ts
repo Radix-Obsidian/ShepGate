@@ -90,7 +90,7 @@ export async function POST(
     const newTools = discoveredTools.filter(t => !existingNames.has(t.name));
     
     if (newTools.length > 0) {
-      await prisma.tool.createMany({
+      const createdTools = await prisma.tool.createMany({
         data: newTools.map(tool => ({
           serverId: id,
           name: tool.name,
@@ -99,6 +99,42 @@ export async function POST(
           riskLevel: 'needs_approval', // Default to needs approval for safety
         })),
       });
+
+      // Get all agents to create permissions for new tools
+      const allAgents = await prisma.agentProfile.findMany({
+        select: { id: true },
+      });
+
+      // Create permissions for all agents for the new tools
+      if (allAgents.length > 0) {
+        // Get the created tools with their IDs
+        const createdToolNames = newTools.map(t => t.name);
+        const toolsWithIds = await prisma.tool.findMany({
+          where: {
+            serverId: id,
+            name: { in: createdToolNames },
+          },
+          select: { id: true, name: true },
+        });
+
+        const permissionsToCreate = [];
+        for (const agent of allAgents) {
+          for (const tool of toolsWithIds) {
+            permissionsToCreate.push({
+              agentProfileId: agent.id,
+              toolId: tool.id,
+              allowed: false, // Default to blocked for safety
+            });
+          }
+        }
+
+        if (permissionsToCreate.length > 0) {
+          await prisma.toolPermission.createMany({
+            data: permissionsToCreate,
+            skipDuplicates: true,
+          });
+        }
+      }
     }
 
     // Fetch all tools after sync
@@ -114,9 +150,15 @@ export async function POST(
       tools: allTools,
     });
   } catch (error) {
-    console.error('Error syncing tools:', error);
+    console.error('=== SYNC ERROR DEBUG ===');
+    console.error('Error type:', typeof error);
+    console.error('Error name:', error instanceof Error ? error.name : 'N/A');
+    console.error('Error message:', error instanceof Error ? error.message : String(error));
+    console.error('Error stack:', error instanceof Error ? error.stack : 'N/A');
+    console.error('Full error:', error);
+    console.error('=== END SYNC ERROR DEBUG ===');
     return NextResponse.json(
-      { error: 'Failed to sync tools' },
+      { error: 'Failed to sync tools', details: error instanceof Error ? error.message : String(error) },
       { status: 500 }
     );
   }
