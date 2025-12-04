@@ -1,4 +1,5 @@
 import { prisma } from '@/lib/db';
+import { ToolExecutor } from '@/lib/execution';
 
 export interface ExecutionRequest {
   agentProfileId: string;
@@ -159,8 +160,17 @@ export class PolicyEngine {
       },
     });
 
-    // TODO: Actually execute the tool here (Phase 5)
-    console.log(`Tool ${pendingAction.tool.name} would be executed with arguments:`, pendingAction.argumentsJson);
+    // Execute the tool using the ToolExecutor
+    const executionResult = await ToolExecutor.executeTool(
+      pendingAction.toolId,
+      pendingAction.argumentsJson
+    );
+
+    if (!executionResult.success) {
+      throw new Error(`Tool execution failed: ${executionResult.error}`);
+    }
+
+    console.log(`Tool ${pendingAction.tool.name} executed successfully in ${executionResult.executionTime}ms`);
   }
 
   /**
