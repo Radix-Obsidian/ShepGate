@@ -12,15 +12,15 @@
 - [x] Task 2.2: Tool Model & Discovery (API routes, sync functionality)
 - [x] Task 2.3: Risk Level Editing (UI for editing tool risk levels)
 
-## Phase 3: Agent Profiles & Permissions 🔄
-- [ ] Task 3.1: Agent Profile CRUD
-- [ ] Task 3.2: Tool Permission Management
-- [ ] Task 3.3: Agent-Server Assignment
+## Phase 3: Agent Profiles & Permissions ✅
+- [x] Task 3.1: Agent Profile CRUD
+- [x] Task 3.2: Tool Permission Management
+- [x] Task 3.3: Agent-Server Assignment (Skipped - global permissions sufficient)
 
-## Phase 4: Policy Engine ⏳
-- [ ] Task 4.1: Risk Evaluation Rules
-- [ ] Task 4.2: Approval Workflow UI
-- [ ] Task 4.3: Action Queue Management
+## Phase 4: Policy Engine ✅
+- [x] Task 4.1: Risk Evaluation Rules
+- [x] Task 4.2: Approval Workflow UI
+- [x] Task 4.3: Action Queue Management (Completed as part of Task 4.2)
 
 ## Phase 5: Tool Execution Layer ⏳
 - [ ] Task 5.1: MCP Server Communication

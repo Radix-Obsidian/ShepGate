@@ -57,6 +57,24 @@ export async function POST(request: NextRequest) {
       },
     });
 
+    // Backfill permissions for all existing tools
+    const allTools = await prisma.tool.findMany({
+      select: { id: true },
+    });
+
+    if (allTools.length > 0) {
+      const permissionsToCreate = allTools.map(tool => ({
+        agentProfileId: agent.id,
+        toolId: tool.id,
+        allowed: false, // Default to blocked for safety
+      }));
+
+      await prisma.toolPermission.createMany({
+        data: permissionsToCreate,
+        skipDuplicates: true,
+      });
+    }
+
     return NextResponse.json({ agent }, { status: 201 });
   } catch (error) {
     console.error('Failed to create agent:', error);
