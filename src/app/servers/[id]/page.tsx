@@ -3,6 +3,8 @@
 import { useEffect, useState, useCallback } from 'react';
 import { useParams, useRouter } from 'next/navigation';
 import { DashboardLayout } from '@/components/layout';
+import { RiskLevelBadge } from '@/components/tools/RiskLevelBadge';
+import { AddToolModal } from '@/components/tools/AddToolModal';
 import Link from 'next/link';
 
 interface Tool {
@@ -10,6 +12,7 @@ interface Tool {
   name: string;
   description: string | null;
   riskLevel: string;
+  inputSchema: object | null;
   createdAt: string;
 }
 
@@ -30,6 +33,8 @@ export default function ServerDetailPage() {
   const [server, setServer] = useState<Server | null>(null);
   const [loading, setLoading] = useState(true);
   const [editing, setEditing] = useState(false);
+  const [isAddToolOpen, setIsAddToolOpen] = useState(false);
+  const [syncing, setSyncing] = useState(false);
   const [editForm, setEditForm] = useState({
     name: '',
     description: '',
@@ -95,16 +100,33 @@ export default function ServerDetailPage() {
     }
   };
 
-  const getRiskLevelBadge = (level: string) => {
-    switch (level) {
-      case 'safe':
-        return 'bg-green-900/50 text-green-300';
-      case 'needs_approval':
-        return 'bg-yellow-900/50 text-yellow-300';
-      case 'blocked':
-        return 'bg-red-900/50 text-red-300';
-      default:
-        return 'bg-gray-700 text-gray-300';
+  const handleSyncTools = async () => {
+    setSyncing(true);
+    try {
+      const response = await fetch(`/api/servers/${params.id}/sync`, {
+        method: 'POST',
+      });
+      if (response.ok) {
+        fetchServer();
+      }
+    } catch (error) {
+      console.error('Failed to sync tools:', error);
+    } finally {
+      setSyncing(false);
+    }
+  };
+
+  const handleDeleteTool = async (toolId: string) => {
+    if (!confirm('Are you sure you want to delete this tool?')) return;
+    try {
+      const response = await fetch(`/api/tools/${toolId}`, {
+        method: 'DELETE',
+      });
+      if (response.ok) {
+        fetchServer();
+      }
+    } catch (error) {
+      console.error('Failed to delete tool:', error);
     }
   };
 
@@ -260,10 +282,22 @@ export default function ServerDetailPage() {
         {/* Tools Section */}
         <div className="bg-gray-900 rounded-xl border border-gray-800 overflow-hidden">
           <div className="px-6 py-4 border-b border-gray-800 flex items-center justify-between">
-            <h3 className="text-lg font-medium text-white">Tools</h3>
-            <button className="px-3 py-1.5 bg-blue-600 hover:bg-blue-700 text-white rounded-lg text-sm font-medium transition-colors">
-              Sync Tools
-            </button>
+            <h3 className="text-lg font-medium text-white">Tools ({server.tools.length})</h3>
+            <div className="flex gap-2">
+              <button
+                onClick={() => setIsAddToolOpen(true)}
+                className="px-3 py-1.5 bg-gray-700 hover:bg-gray-600 text-white rounded-lg text-sm font-medium transition-colors"
+              >
+                Add Tool
+              </button>
+              <button
+                onClick={handleSyncTools}
+                disabled={syncing}
+                className="px-3 py-1.5 bg-blue-600 hover:bg-blue-700 disabled:bg-blue-800 text-white rounded-lg text-sm font-medium transition-colors"
+              >
+                {syncing ? 'Syncing...' : 'Sync Tools'}
+              </button>
+            </div>
           </div>
 
           {server.tools.length === 0 ? (
@@ -280,19 +314,30 @@ export default function ServerDetailPage() {
                   <th className="px-6 py-3 text-left text-xs font-medium text-gray-400 uppercase">Name</th>
                   <th className="px-6 py-3 text-left text-xs font-medium text-gray-400 uppercase">Risk Level</th>
                   <th className="px-6 py-3 text-left text-xs font-medium text-gray-400 uppercase">Description</th>
+                  <th className="px-6 py-3 text-right text-xs font-medium text-gray-400 uppercase">Actions</th>
                 </tr>
               </thead>
               <tbody className="divide-y divide-gray-800">
                 {server.tools.map((tool) => (
                   <tr key={tool.id} className="hover:bg-gray-800/30">
-                    <td className="px-6 py-4 text-white font-medium">{tool.name}</td>
+                    <td className="px-6 py-4 text-white font-medium font-mono text-sm">{tool.name}</td>
                     <td className="px-6 py-4">
-                      <span className={`px-2 py-1 rounded text-xs ${getRiskLevelBadge(tool.riskLevel)}`}>
-                        {tool.riskLevel.replace('_', ' ')}
-                      </span>
+                      <RiskLevelBadge
+                        toolId={tool.id}
+                        currentLevel={tool.riskLevel}
+                        onUpdate={fetchServer}
+                      />
                     </td>
-                    <td className="px-6 py-4 text-gray-400 text-sm">
+                    <td className="px-6 py-4 text-gray-400 text-sm max-w-xs truncate">
                       {tool.description || 'No description'}
+                    </td>
+                    <td className="px-6 py-4 text-right">
+                      <button
+                        onClick={() => handleDeleteTool(tool.id)}
+                        className="text-red-400 hover:text-red-300 text-sm"
+                      >
+                        Delete
+                      </button>
                     </td>
                   </tr>
                 ))}
@@ -301,6 +346,13 @@ export default function ServerDetailPage() {
           )}
         </div>
       </div>
+
+      <AddToolModal
+        isOpen={isAddToolOpen}
+        onClose={() => setIsAddToolOpen(false)}
+        onSuccess={fetchServer}
+        serverId={server.id}
+      />
     </DashboardLayout>
   );
 }
