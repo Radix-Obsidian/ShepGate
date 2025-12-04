@@ -1,0 +1,114 @@
+// ShepGate Database Schema
+// See .specify/specs/001-shepgate-mvp/plan.md for details
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+// Single owner account for MVP
+model User {
+  id           String   @id @default(cuid())
+  email        String   @unique
+  passwordHash String
+  createdAt    DateTime @default(now())
+  updatedAt    DateTime @updatedAt
+}
+
+// Agent profiles (e.g., "claude-desktop", "windsurf-cascade")
+model AgentProfile {
+  id          String   @id @default(cuid())
+  name        String
+  description String?
+  hostType    String   // e.g., "claude-desktop", "windsurf-cascade"
+  apiKey      String?  // Optional key used by host
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+
+  toolPermissions ToolPermission[]
+  pendingActions  PendingAction[]
+  actionLogs      ActionLog[]
+}
+
+// MCP servers or HTTP APIs
+model Server {
+  id          String   @id @default(cuid())
+  name        String
+  type        String   // "mcp" or "http"
+  command     String?  // How to start MCP server (for local dev)
+  baseUrl     String?  // For HTTP APIs
+  description String?
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+
+  tools Tool[]
+}
+
+// Individual tools exposed by servers
+model Tool {
+  id          String   @id @default(cuid())
+  serverId    String
+  server      Server   @relation(fields: [serverId], references: [id], onDelete: Cascade)
+  name        String   // Tool identifier
+  description String?
+  riskLevel   String   @default("blocked") // "safe" | "needs_approval" | "blocked"
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+
+  toolPermissions ToolPermission[]
+  pendingActions  PendingAction[]
+  actionLogs      ActionLog[]
+
+  @@unique([serverId, name])
+}
+
+// Per-agent tool permissions
+model ToolPermission {
+  id             String       @id @default(cuid())
+  agentProfileId String
+  toolId         String
+  allowed        Boolean      @default(false)
+  agentProfile   AgentProfile @relation(fields: [agentProfileId], references: [id], onDelete: Cascade)
+  tool           Tool         @relation(fields: [toolId], references: [id], onDelete: Cascade)
+
+  @@unique([agentProfileId, toolId])
+}
+
+// Encrypted secrets storage
+model Secret {
+  id        String   @id @default(cuid())
+  name      String   @unique
+  value     String   // Encrypted at rest (app layer encryption)
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+}
+
+// Pending approval queue
+model PendingAction {
+  id             String       @id @default(cuid())
+  agentProfileId String
+  agentProfile   AgentProfile @relation(fields: [agentProfileId], references: [id], onDelete: Cascade)
+  toolId         String
+  tool           Tool         @relation(fields: [toolId], references: [id], onDelete: Cascade)
+  argumentsJson  String       // Captured call arguments
+  status         String       @default("pending") // "pending" | "approved" | "denied"
+  createdAt      DateTime     @default(now())
+  updatedAt      DateTime     @updatedAt
+}
+
+// Audit trail for all tool actions
+model ActionLog {
+  id             String        @id @default(cuid())
+  agentProfileId String?
+  agentProfile   AgentProfile? @relation(fields: [agentProfileId], references: [id], onDelete: SetNull)
+  toolId         String?
+  tool           Tool?         @relation(fields: [toolId], references: [id], onDelete: SetNull)
+  status         String        // "success" | "failed" | "blocked" | "pending" | "approved" | "denied"
+  argumentsJson  String?       // Redacted/sanitized version
+  resultSummary  String?       // Short text description
+  createdAt      DateTime      @default(now())
+}

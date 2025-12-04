@@ -1,0 +1,23 @@
+version: '3.8'
+
+services:
+  postgres:
+    image: postgres:16-alpine
+    container_name: shepgate-db
+    restart: unless-stopped
+    environment:
+      POSTGRES_USER: shepgate
+      POSTGRES_PASSWORD: shepgate_dev
+      POSTGRES_DB: shepgate
+    ports:
+      - '5433:5432'
+    volumes:
+      - shepgate_postgres_data:/var/lib/postgresql/data
+    healthcheck:
+      test: ['CMD-SHELL', 'pg_isready -U shepgate -d shepgate']
+      interval: 10s
+      timeout: 5s
+      retries: 5
+
+volumes:
+  shepgate_postgres_data:
