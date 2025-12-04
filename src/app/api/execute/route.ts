@@ -2,6 +2,7 @@ import { NextRequest, NextResponse } from 'next/server';
 import { prisma } from '@/lib/db';
 import { getSession } from '@/lib/auth';
 import { PolicyEngine } from '@/lib/policy';
+import { ToolExecutor } from '@/lib/execution';
 
 // POST /api/execute - Execute a tool with policy evaluation
 export async function POST(request: NextRequest) {
@@ -39,10 +40,17 @@ export async function POST(request: NextRequest) {
       argumentsJson,
     });
 
-    // Return the policy evaluation result
+    // If policy allows immediate execution, execute the tool
+    let executionResult = null;
+    if (policyResult.allowed && policyResult.reason === 'allowed') {
+      executionResult = await ToolExecutor.executeTool(toolId, argumentsJson);
+    }
+
+    // Return the policy evaluation result and execution result if applicable
     return NextResponse.json({
       success: true,
       policyResult,
+      executionResult,
     });
   } catch (error) {
     console.error('Failed to execute tool:', error);
