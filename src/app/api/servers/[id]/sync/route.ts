@@ -90,7 +90,7 @@ export async function POST(
     const newTools = discoveredTools.filter(t => !existingNames.has(t.name));
     
     if (newTools.length > 0) {
-      const createdTools = await prisma.tool.createMany({
+      await prisma.tool.createMany({
         data: newTools.map(tool => ({
           serverId: id,
           name: tool.name,
