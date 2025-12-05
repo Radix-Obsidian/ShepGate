@@ -109,7 +109,7 @@ export class PolicyEngine {
         toolId: request.toolId,
         argumentsJson: request.argumentsJson,
         status,
-        reason,
+        resultSummary: reason, // Store reason in resultSummary field
       },
     });
   }
@@ -156,7 +156,7 @@ export class PolicyEngine {
         toolId: pendingAction.toolId,
         argumentsJson: pendingAction.argumentsJson,
         status: 'executed',
-        reason: 'approved',
+        resultSummary: 'approved',
       },
     });
 
@@ -198,7 +198,7 @@ export class PolicyEngine {
         toolId: pendingAction.toolId,
         argumentsJson: pendingAction.argumentsJson,
         status: 'denied',
-        reason: 'denied_by_user',
+        resultSummary: 'denied_by_user',
       },
     });
   }

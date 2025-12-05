@@ -1,7 +1,7 @@
 'use client';
 
 import { useState } from 'react';
-import { Modal } from '@/components/ui';
+import { Modal } from '@/components/ui/Modal';
 
 interface AddAgentModalProps {
   isOpen: boolean;
