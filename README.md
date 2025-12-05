@@ -251,6 +251,7 @@ Built by [Golden Sheep AI](https://goldensheep.ai) — Making AI agents safer fo
 - **ShepGate** — AI governance gateway (this project)
 - **ShepLang** — Natural language spec compiler
 - **ShepLight** — Lightweight AI observability
+- **ShepVerify** - Your Code Quality at a Glance
 
 ---
 
