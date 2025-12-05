@@ -104,15 +104,19 @@ export function Sidebar() {
         })}
       </nav>
 
-      {/* User section */}
+      {/* Footer */}
       <div className="border-t border-gray-800 p-4">
         <div className="flex items-center gap-3">
-          <div className="h-8 w-8 rounded-full bg-gray-700 flex items-center justify-center">
-            <span className="text-sm text-gray-300">O</span>
-          </div>
+          <Image 
+            src="/logo.png" 
+            alt="Golden Sheep AI" 
+            width={32} 
+            height={32}
+            className="rounded-full opacity-60"
+          />
           <div className="flex-1 min-w-0">
-            <p className="text-sm font-medium text-white truncate">Owner</p>
-            <p className="text-xs text-gray-500 truncate">Single account</p>
+            <p className="text-xs text-gray-500">Built by</p>
+            <p className="text-sm font-medium text-gray-400 truncate">Golden Sheep AI</p>
           </div>
         </div>
       </div>

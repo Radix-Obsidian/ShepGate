@@ -110,14 +110,14 @@ pnpm install
 cp .env.example .env
 ```
 
-Edit `.env` with your database URL and credentials:
+Edit `.env` with your database URL:
 
 ```env
 DATABASE_URL="postgresql://user:pass@localhost:5432/shepgate"
-OWNER_EMAIL="you@example.com"
-OWNER_PASSWORD="your-secure-password"
 ENCRYPTION_KEY="your-32-byte-hex-key"
 ```
+
+> **MVP Note:** No authentication required. The dashboard is open access to reduce friction.
 
 ### 3. Setup Database
 
@@ -135,7 +135,7 @@ pnpm db:seed
 pnpm dev
 ```
 
-Open [http://localhost:3000](http://localhost:3000) and log in with your owner credentials.
+Open [http://localhost:3000](http://localhost:3000) — you'll land directly on the dashboard!
 
 ### 5. Connect Claude Desktop
 
@@ -206,7 +206,7 @@ See [Business Model](./docs/business-model.md) for full details.
 | **Database** | PostgreSQL |
 | **ORM** | Prisma |
 | **MCP SDK** | @modelcontextprotocol/sdk |
-| **Auth** | Simple owner auth (multi-user planned) |
+| **Auth** | None (MVP is open access) |
 | **Encryption** | AES-256-GCM via Node.js crypto |
 
 ---
