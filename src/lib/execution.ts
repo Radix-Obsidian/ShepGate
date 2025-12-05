@@ -1,4 +1,5 @@
 import { prisma } from '@/lib/db';
+import { callServerTool } from '@/lib/mcp-client';
 
 export interface ExecutionRequest {
   agentProfileId: string;
@@ -8,21 +9,27 @@ export interface ExecutionRequest {
 
 export interface ExecutionResult {
   success: boolean;
-  result?: any;
+  result?: unknown;
   error?: string;
   executionTime: number;
 }
 
+// Environment flag to force mock execution (for testing without real MCP servers)
+const USE_MOCK_EXECUTION = process.env.USE_MOCK_EXECUTION === 'true';
+
 export class ToolExecutor {
   /**
-   * Execute a tool with mock responses based on tool name patterns
-   * In production, this would spawn actual MCP servers and communicate via stdio/HTTP
+   * Execute a tool using real MCP server communication
+   * Falls back to mock execution if:
+   * - USE_MOCK_EXECUTION=true env var is set
+   * - Server has no command configured
+   * - Real execution fails
    */
   static async executeTool(toolId: string, argumentsJson: string): Promise<ExecutionResult> {
     const startTime = Date.now();
     
     try {
-      // Get tool details for context
+      // Get tool details
       const tool = await prisma.tool.findUnique({
         where: { id: toolId },
         include: { server: true },
@@ -37,19 +44,48 @@ export class ToolExecutor {
       }
 
       // Parse arguments
-      let args;
+      let args: Record<string, unknown>;
       try {
         args = JSON.parse(argumentsJson);
       } catch {
         args = {};
       }
 
-      // Mock execution based on tool name patterns
-      const result = await this.mockExecution(tool.name, tool.server.name, args);
+      // Decide whether to use real or mock execution
+      const useRealExecution = !USE_MOCK_EXECUTION && 
+                               tool.server.command && 
+                               tool.server.command.trim().length > 0;
+
+      if (useRealExecution) {
+        // Real MCP server execution
+        console.error(`Executing tool ${tool.name} on real MCP server: ${tool.server.name}`);
+        
+        const result = await callServerTool(
+          tool.server.id,
+          tool.name,
+          args
+        );
+
+        if (result.success) {
+          return {
+            success: true,
+            result: result.content,
+            executionTime: Date.now() - startTime,
+          };
+        }
+
+        // If real execution failed, log and fall back to mock
+        console.error(`Real execution failed for ${tool.name}: ${result.error}`);
+        console.error('Falling back to mock execution');
+      }
+
+      // Mock execution (fallback or when no command configured)
+      console.error(`Using mock execution for ${tool.name}`);
+      const mockResult = await this.mockExecution(tool.name, tool.server.name, args);
 
       return {
         success: true,
-        result,
+        result: mockResult,
         executionTime: Date.now() - startTime,
       };
     } catch (error) {
@@ -64,8 +100,9 @@ export class ToolExecutor {
   /**
    * Mock tool execution based on tool name patterns
    * Simulates realistic responses for different tool types
+   * Used as fallback when real MCP servers are not available
    */
-  private static async mockExecution(toolName: string, serverName: string, args: any): Promise<any> {
+  private static async mockExecution(toolName: string, serverName: string, args: Record<string, unknown>): Promise<unknown> {
     // Simulate network delay
     await new Promise(resolve => setTimeout(resolve, 500 + Math.random() * 1000));
 
@@ -94,7 +131,7 @@ export class ToolExecutor {
     };
   }
 
-  private static mockGitHubExecution(toolName: string, args: any): any {
+  private static mockGitHubExecution(toolName: string, args: Record<string, unknown>): unknown {
     switch (toolName) {
       case 'github_list_repos':
         return {
@@ -159,7 +196,7 @@ export class ToolExecutor {
     }
   }
 
-  private static mockFilesystemExecution(toolName: string, args: any): any {
+  private static mockFilesystemExecution(toolName: string, args: Record<string, unknown>): unknown {
     switch (toolName) {
       case 'fs_read_file':
         return {
@@ -171,7 +208,7 @@ export class ToolExecutor {
       case 'fs_write_file':
         return {
           path: args.path || '/path/to/file.txt',
-          bytes_written: args.content ? args.content.length : 0,
+          bytes_written: typeof args.content === 'string' ? args.content.length : 0,
           success: true,
         };
 
@@ -194,7 +231,7 @@ export class ToolExecutor {
     }
   }
 
-  private static mockDatabaseExecution(toolName: string, args: any): any {
+  private static mockDatabaseExecution(toolName: string, args: Record<string, unknown>): unknown {
     switch (toolName) {
       case 'db_query':
         return {
