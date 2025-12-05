@@ -23,14 +23,14 @@
 - [x] Task 4.3: Action Queue Management (Completed as part of Task 4.2)
 
 ## Phase 5: Tool Execution Layer ✅
-- [x] Task 5.1: MCP Server Communication (Mock Implementation)
+- [x] Task 5.1: MCP Server Communication (Real via src/lib/mcp-client.ts, mock fallback)
 - [x] Task 5.2: Tool Execution Engine (Integrated with PolicyEngine)
 - [x] Task 5.3: Execution Logging (Complete audit trail)
 
-## Phase 6: Secrets Management ⏳
-- [ ] Task 6.1: Secret Storage UI (Deferred - not required for MVP)
-- [ ] Task 6.2: Encryption/Decryption (Deferred - not required for MVP)
-- [ ] Task 6.3: Secret Injection (Deferred - not required for MVP)
+## Phase 6: Secrets Management ✅
+- [x] Task 6.1: Secret Storage UI (src/app/secrets/page.tsx)
+- [x] Task 6.2: Encryption/Decryption (AES-256-GCM via src/lib/secrets.ts)
+- [x] Task 6.3: Secret Injection (Injected to MCP servers via src/lib/mcp-client.ts)
 
 ## Phase 7: Activity Monitoring ✅  
 - [x] Task 7.1: Action Log Viewing (Activity page implemented)
