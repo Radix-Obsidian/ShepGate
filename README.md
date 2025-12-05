@@ -6,7 +6,10 @@
 
 **The safe front door for AI tools.**
 
+[![npm version](https://img.shields.io/npm/v/@goldensheepai/shepgate.svg)](https://www.npmjs.com/package/@goldensheepai/shepgate)
+[![npm downloads](https://img.shields.io/npm/dt/@goldensheepai/shepgate.svg)](https://www.npmjs.com/package/@goldensheepai/shepgate)
 [![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](https://opensource.org/licenses/MIT)
+[![GitHub stars](https://img.shields.io/github/stars/Radix-Obsidian/ShepGate?style=social)](https://github.com/Radix-Obsidian/ShepGate)
 [![Node.js](https://img.shields.io/badge/Node.js-22+-green.svg)](https://nodejs.org/)
 [![TypeScript](https://img.shields.io/badge/TypeScript-5.0+-blue.svg)](https://www.typescriptlang.org/)
 [![MCP](https://img.shields.io/badge/MCP-Compatible-purple.svg)](https://modelcontextprotocol.io/)
@@ -251,6 +254,7 @@ Built by [Golden Sheep AI](https://goldensheep.ai) — Making AI agents safer fo
 - **ShepGate** — AI governance gateway (this project)
 - **ShepLang** — Natural language spec compiler
 - **ShepLight** — Lightweight AI observability
+- **ShepVerify** - Your Code Quality at a Glance
 
 ---
 

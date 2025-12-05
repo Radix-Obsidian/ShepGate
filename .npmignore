@@ -1,0 +1,45 @@
+# Development files
+.env
+.env.*
+!.env.example
+.vscode/
+.idea/
+*.log
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+pnpm-debug.log*
+
+# Build artifacts
+.next/
+out/
+dist/
+build/
+.vercel/
+.turbo/
+
+# Testing
+coverage/
+.nyc_output/
+test-results/
+
+# Prisma
+prisma/migrations/
+
+# Specs and workflows
+.specify/
+.agent/
+
+# CI/CD
+.github/workflows/
+
+# Git
+.git/
+.gitignore
+
+# Node modules
+node_modules/
+
+# OS files
+.DS_Store
+Thumbs.db

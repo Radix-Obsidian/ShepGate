@@ -1,5 +1,5 @@
 {
-  "name": "shepgate",
+  "name": "@goldensheepai/shepgate",
   "version": "0.1.0",
   "description": "The safe front door for AI tools - AI governance gateway with policy control, approval workflows, and activity logging",
   "author": "Golden Sheep AI <hello@goldensheep.ai>",
@@ -23,7 +23,23 @@
     "approval-workflow",
     "audit-logging"
   ],
-  "private": true,
+  "private": false,
+  "files": [
+    "scripts",
+    "public/logo.png",
+    "public/logo.svg",
+    "README.md",
+    "LICENSE",
+    "CHANGELOG.md"
+  ],
+  "publishConfig": {
+    "access": "public",
+    "registry": "https://registry.npmjs.org/"
+  },
+  "engines": {
+    "node": ">=22.0.0",
+    "pnpm": ">=9.0.0"
+  },
   "scripts": {
     "dev": "next dev",
     "build": "next build",
