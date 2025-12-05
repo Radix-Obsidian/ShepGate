@@ -1,6 +1,8 @@
 <div align="center">
 
-# 🐑 ShepGate
+<img src="public/logo.png" alt="ShepGate Logo" width="120" height="120">
+
+# ShepGate
 
 **The safe front door for AI tools.**
 
@@ -9,7 +11,7 @@
 [![TypeScript](https://img.shields.io/badge/TypeScript-5.0+-blue.svg)](https://www.typescriptlang.org/)
 [![MCP](https://img.shields.io/badge/MCP-Compatible-purple.svg)](https://modelcontextprotocol.io/)
 
-[Demo](#demo) • [Quick Start](#quick-start) • [Features](#features) • [Documentation](#documentation) • [Roadmap](#roadmap)
+[Demo](#demo) • [Quick Start](#quick-start) • [Features](#features) • [Pricing](#pricing) • [Roadmap](#roadmap)
 
 </div>
 
@@ -175,6 +177,22 @@ shepgate/
 │   └── schema.prisma        # Database schema
 └── .specify/                # Spec-driven docs
 ```
+
+---
+
+## Pricing
+
+ShepGate uses a **freemium model** designed for non-technical founders.
+
+| Tier | Price | Agents | Servers | Best For |
+|------|-------|--------|---------|----------|
+| **Free** | $0/mo | 1 | 2 | Solo founders testing |
+| **Pro** | $19/mo | 5 | 10 | Serious builders |
+| **Scale** | $49/mo | 20 | Unlimited | Growing teams |
+
+> **MVP Note:** v0.1 is free with no limits. Pricing tiers coming in v0.2.
+
+See [Business Model](./docs/business-model.md) for full details.
 
 ---
 
