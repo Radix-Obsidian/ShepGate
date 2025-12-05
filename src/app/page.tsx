@@ -1,7 +1,46 @@
+'use client';
+
+import { useEffect, useState } from 'react';
 import { DashboardLayout } from '@/components/layout';
 import Link from 'next/link';
 
+interface DashboardStats {
+  servers: number;
+  agents: number;
+  pending: number;
+  actions: number;
+}
+
 export default function DashboardPage() {
+  const [stats, setStats] = useState<DashboardStats>({
+    servers: 0,
+    agents: 0,
+    pending: 0,
+    actions: 0
+  });
+  const [loading, setLoading] = useState(true);
+
+  const fetchStats = async () => {
+    try {
+      const response = await fetch('/api/dashboard');
+      if (response.ok) {
+        const data = await response.json();
+        setStats(data);
+      }
+    } catch (error) {
+      console.error('Failed to fetch dashboard stats:', error);
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  useEffect(() => {
+    fetchStats();
+    // Auto-refresh every 30 seconds
+    const interval = setInterval(fetchStats, 30000);
+    return () => clearInterval(interval);
+  }, []);
+
   return (
     <DashboardLayout title="Dashboard">
       <div className="space-y-6">
@@ -15,10 +54,10 @@ export default function DashboardPage() {
 
         {/* Quick stats */}
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
-          <StatCard title="Servers" value="0" href="/servers" description="Connected tools" />
-          <StatCard title="Agents" value="1" href="/agents" description="AI profiles" />
-          <StatCard title="Pending" value="0" href="/approvals" description="Awaiting approval" />
-          <StatCard title="Actions" value="0" href="/activity" description="Today's activity" />
+          <StatCard title="Servers" value={loading ? '...' : String(stats.servers)} href="/servers" description="Connected tools" />
+          <StatCard title="Agents" value={loading ? '...' : String(stats.agents)} href="/agents" description="AI profiles" />
+          <StatCard title="Pending" value={loading ? '...' : String(stats.pending)} href="/approvals" description="Awaiting approval" highlight={stats.pending > 0} />
+          <StatCard title="Actions" value={loading ? '...' : String(stats.actions)} href="/activity" description="Today's activity" />
         </div>
 
         {/* Quick actions */}
@@ -77,20 +116,24 @@ function StatCard({
   title, 
   value, 
   href, 
-  description 
+  description,
+  highlight = false
 }: { 
   title: string; 
   value: string; 
   href: string; 
   description: string;
+  highlight?: boolean;
 }) {
   return (
     <Link
       href={href}
-      className="bg-gray-900 rounded-xl p-6 border border-gray-800 hover:border-gray-700 transition-colors"
+      className={`bg-gray-900 rounded-xl p-6 border transition-colors ${
+        highlight ? 'border-yellow-500 bg-yellow-900/10' : 'border-gray-800 hover:border-gray-700'
+      }`}
     >
-      <p className="text-sm text-gray-400 mb-1">{title}</p>
-      <p className="text-3xl font-bold text-white mb-1">{value}</p>
+      <p className={`text-sm mb-1 ${highlight ? 'text-yellow-400' : 'text-gray-400'}`}>{title}</p>
+      <p className={`text-3xl font-bold mb-1 ${highlight ? 'text-yellow-300' : 'text-white'}`}>{value}</p>
       <p className="text-xs text-gray-500">{description}</p>
     </Link>
   );

@@ -7,7 +7,7 @@ interface ActionLog {
   id: string;
   argumentsJson: string;
   status: string;
-  reason: string;
+  resultSummary: string;
   createdAt: string;
   agentProfile: {
     id: string;
@@ -29,9 +29,11 @@ interface ActionLog {
 export default function ActivityPage() {
   const [actionLogs, setActionLogs] = useState<ActionLog[]>([]);
   const [loading, setLoading] = useState(true);
+  const [refreshing, setRefreshing] = useState(false);
   const [expandedLogs, setExpandedLogs] = useState<Set<string>>(new Set());
 
-  const fetchActionLogs = async () => {
+  const fetchActionLogs = async (isRefresh = false) => {
+    if (isRefresh) setRefreshing(true);
     try {
       const response = await fetch('/api/activity');
       if (response.ok) {
@@ -42,11 +44,15 @@ export default function ActivityPage() {
       console.error('Failed to fetch action logs:', error);
     } finally {
       setLoading(false);
+      setRefreshing(false);
     }
   };
 
   useEffect(() => {
     fetchActionLogs();
+    // Auto-refresh every 10 seconds
+    const interval = setInterval(() => fetchActionLogs(), 10000);
+    return () => clearInterval(interval);
   }, []);
 
   const toggleExpanded = (logId: string) => {
@@ -64,9 +70,13 @@ export default function ActivityPage() {
   const formatArguments = (argumentsJson: string) => {
     try {
       const parsed = JSON.parse(argumentsJson);
+      // Check if empty object or null
+      if (!parsed || (typeof parsed === 'object' && Object.keys(parsed).length === 0)) {
+        return '(no arguments)';
+      }
       return JSON.stringify(parsed, null, 2);
     } catch {
-      return argumentsJson;
+      return argumentsJson || '(no arguments)';
     }
   };
 
@@ -126,10 +136,19 @@ export default function ActivityPage() {
             <p className="text-gray-400 mt-1">Track all AI agent actions and tool calls</p>
           </div>
           <button
-            onClick={fetchActionLogs}
-            className="px-4 py-2 bg-gray-700 hover:bg-gray-600 text-white rounded-lg text-sm font-medium transition-colors"
+            onClick={() => fetchActionLogs(true)}
+            disabled={refreshing}
+            className="px-4 py-2 bg-gray-700 hover:bg-gray-600 disabled:opacity-50 text-white rounded-lg text-sm font-medium transition-colors flex items-center gap-2"
           >
-            Refresh
+            {refreshing ? (
+              <>
+                <svg className="animate-spin h-4 w-4" viewBox="0 0 24 24">
+                  <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4" fill="none" />
+                  <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z" />
+                </svg>
+                Refreshing...
+              </>
+            ) : 'Refresh'}
           </button>
         </div>
 
@@ -172,7 +191,7 @@ export default function ActivityPage() {
                           </span>
                         )}
                         <span>Server: <span className="text-white">{log.tool?.server.name || 'Unknown'}</span></span>
-                        <span>Reason: <span className="text-white">{log.reason}</span></span>
+                        <span>Reason: <span className="text-white">{log.resultSummary}</span></span>
                       </div>
                     </div>
                     <button
@@ -187,9 +206,13 @@ export default function ActivityPage() {
                   {expandedLogs.has(log.id) && (
                     <div className="mt-4">
                       <h4 className="text-sm font-medium text-gray-300 mb-2">Arguments:</h4>
-                      <pre className="bg-gray-800 border border-gray-700 rounded-lg p-3 text-xs text-gray-300 overflow-x-auto">
-                        {formatArguments(log.argumentsJson)}
-                      </pre>
+                      {formatArguments(log.argumentsJson) === '(no arguments)' ? (
+                        <p className="text-gray-500 text-sm italic">No arguments provided for this tool call</p>
+                      ) : (
+                        <pre className="bg-gray-800 border border-gray-700 rounded-lg p-3 text-xs text-gray-300 overflow-x-auto">
+                          {formatArguments(log.argumentsJson)}
+                        </pre>
+                      )}
                     </div>
                   )}
                 </div>

@@ -1,18 +1,43 @@
 {
   "name": "shepgate",
   "version": "0.1.0",
+  "description": "The safe front door for AI tools - AI governance gateway with policy control, approval workflows, and activity logging",
+  "author": "Golden Sheep AI <hello@goldensheep.ai>",
+  "license": "MIT",
+  "homepage": "https://github.com/golden-sheep-ai/shepgate#readme",
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/golden-sheep-ai/shepgate.git"
+  },
+  "bugs": {
+    "url": "https://github.com/golden-sheep-ai/shepgate/issues"
+  },
+  "keywords": [
+    "ai",
+    "governance",
+    "mcp",
+    "model-context-protocol",
+    "claude",
+    "agent",
+    "security",
+    "approval-workflow",
+    "audit-logging"
+  ],
   "private": true,
   "scripts": {
     "dev": "next dev",
     "build": "next build",
     "start": "next start",
-    "lint": "eslint",
+    "lint": "eslint .",
+    "type-check": "tsc --noEmit",
     "db:generate": "prisma generate",
     "db:migrate": "prisma migrate dev",
+    "db:migrate:prod": "prisma migrate deploy",
     "db:push": "prisma db push",
     "db:studio": "prisma studio",
     "db:seed": "tsx prisma/seed.ts",
-    "mcp:host": "tsx scripts/mcp-host.ts"
+    "mcp:host": "tsx scripts/mcp-host.ts",
+    "prerelease": "pnpm lint && pnpm type-check && pnpm build"
   },
   "dependencies": {
     "@modelcontextprotocol/sdk": "^1.0.0",
